@@ -11,7 +11,7 @@ mod queries {
 
     #[derive(cynic::QueryVariables, Debug)]
     pub struct NestedArgsQueryVariables<'a> {
-        pub film_id: &'a cynic::Id,
+        pub film_id: &'a cynic::IdSlice,
         pub planet_cursor: Option<&'a str>,
         pub resident_connection: Option<&'a str>,
     }

@@ -12,9 +12,9 @@ impl Id {
     /// Constructs an `ID` from a `String`, `&str` or similar
     ///
     /// ```
-    /// cynic::Id::new("123");
+    /// cynic::Id::assume_exists("123");
     /// ```
-    pub fn new(s: impl Into<String>) -> Self {
+    pub fn assume_exists(s: impl Into<String>) -> Self {
         Id(s.into())
     }
 
@@ -33,31 +33,18 @@ impl Id {
     /// To be used when you can access an `&String` which you want to assume is
     /// an `Id` for use in Cynic structures without reallocating
     ///
-    /// If you don't have a `String` at hand but only an `&str`, you should know
-    /// that these can be used directly in `InputObject`s as well when the
-    /// target GraphQL type is an `Id`.
+    /// If you don't have a `String` at hand but only an `&str`, you
+    /// may construct a `&IdSlice`
     pub fn from_ref(s: &String) -> &Self {
-        // Unfortunately this won't work with `&str`
-
-        // Probably the best design if we really wanted to enforce more typing around
-        // Id would be to have `IdSlice { inner: str }` for that case,
-        // that has ref-casting enabled as well, and to have `Id: Deref<Target =
-        // IdSlice>`.
-
-        // However:
-        // - most likely you'll have an actual `&String` at hand when doing that and not
-        //   only an `&str`.
-        // - If you don't it's probably acceptable to either use an `&str` in the
-        //   `InputObject` (which you can because of `CoercesTo` impl) or allocate
-        // - That would significantly add to the complexity of the library for such a
-        //   niche use-case
-        // - To be consistent with enforcing more typing we'd probably want to remove
-        //   `CoercesTo<Id> for str` and rename the `new` function on Id (and IdSlice)
-        //   to `assume_exists`, which would be more boilerplateish and non
-        //   backwards-compatible
-
-        // So overall it's probably not worth
         ref_cast::RefCast::ref_cast(s)
+    }
+}
+
+impl std::ops::Deref for Id {
+    type Target = IdSlice;
+
+    fn deref(&self) -> &Self::Target {
+        IdSlice::assume_exists(self.0.as_str())
     }
 }
 
@@ -70,5 +57,54 @@ impl<T: Into<String>> From<T> for Id {
 impl<'a> From<&'a String> for &'a Id {
     fn from(s: &'a String) -> Self {
         Id::from_ref(s)
+    }
+}
+
+/// [`IdSlice`] is to [`Id`] what [`str`] is to [`String`]
+///
+/// An `&IdSlice` can be constructed from an `&str`, and `Id` `deref`s to that,
+/// which means you can construct your input structs simply by borrowing an
+/// `Id`:
+/// ```
+/// # use cynic::{Id, IdSlice};
+///
+/// // #[derive(InputObject)]
+/// struct Input<'a> {
+///     id: &'a IdSlice,
+/// }
+///
+/// let input = Input {
+///     id: "i_know_that_this_is_an_id".into(),
+/// };
+///
+/// let some_id_elsewhere = &Id::assume_exists("owned id");
+///
+/// let input_from_id = Input {
+///     id: &some_id_elsewhere, // This works thanks to `Deref`
+/// }
+/// ```
+#[derive(Debug, PartialEq, Eq, Hash, Serialize, ref_cast::RefCast)]
+#[repr(transparent)]
+pub struct IdSlice(str);
+
+impl IdSlice {
+    /// Constructs an `&IdSlice` from an `&str`
+    ///
+    /// ```
+    /// let id: &'static IdSlice = cynic::IdSlice::assume_exists("123");
+    /// ```
+    pub fn assume_exists(s: &str) -> &Self {
+        ref_cast::RefCast::ref_cast(s)
+    }
+
+    /// Returns a reference to the value of this `Id`
+    pub fn inner(&self) -> &str {
+        &self.0
+    }
+}
+
+impl<'a> From<&'a str> for &'a IdSlice {
+    fn from(s: &'a str) -> Self {
+        IdSlice::assume_exists(s)
     }
 }

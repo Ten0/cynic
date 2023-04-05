@@ -6,6 +6,7 @@ use cynic::{InlineFragments, QueryFragment};
 #[cynic(graphql_type = "Query", schema_path = "tests/test-schema.graphql")]
 struct AllPostsQuery {
     all_data: Vec<PostOrAuthor>,
+    // The best way to make this work would likely be to update QueryFragment
     #[arguments(id: "123")]
     node: Option<Node>,
 }

@@ -4,7 +4,7 @@
 //! This module contains some traits & macros that are used to implement these
 //! rules in cynic.
 
-use crate::Id;
+use crate::{Id, IdSlice};
 
 /// Determines whether a type can be coerced into a given schema type.
 ///
@@ -49,7 +49,7 @@ mod scalars {
     impl_coercions_for_scalar!(Id);
     impl_coercions_for_scalar!(String);
     impl_coercions!(str, String);
-    impl_coercions!(str, Id);
+    impl_coercions!(IdSlice, Id);
 }
 
 #[cfg(test)]

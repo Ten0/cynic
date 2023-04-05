@@ -217,7 +217,7 @@ fn input_type_spec_imp(
                 ("ID", true) => Cow::Borrowed("cynic::Id"),
                 ("ID", false) => {
                     contains_lifetime_a = true;
-                    Cow::Borrowed("&'a cynic::Id")
+                    Cow::Borrowed("&'a cynic::IdSlice")
                 }
                 ("String", false) => {
                     contains_lifetime_a = true;

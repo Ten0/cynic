@@ -187,7 +187,7 @@ pub mod __private;
 pub use {
     self::core::{Enum, InlineFragments, InputObject, QueryFragment},
     builders::{MutationBuilder, QueryBuilder, SubscriptionBuilder},
-    id::Id,
+    id::{Id, IdSlice},
     operation::{Operation, StreamingOperation},
     result::*,
     variables::{QueryVariables, QueryVariablesFields},
